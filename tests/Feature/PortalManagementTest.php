@@ -46,6 +46,25 @@ class PortalManagementTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_default_admin_credentials_can_restore_and_log_in(): void
+    {
+        User::factory()->create([
+            'email' => 'admin@boleo.mx',
+            'phone' => '5512345678',
+            'role' => 'admin',
+            'password' => 'otraClave123',
+        ]);
+
+        $response = $this->post('/acceder', [
+            'email' => 'admin@boleo.mx',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertAuthenticated();
+        $this->assertTrue(Hash::check('secret123', User::query()->where('email', 'admin@boleo.mx')->firstOrFail()->password));
+    }
+
     public function test_guest_can_create_account_with_user_role(): void
     {
         $response = $this->post(route('register.store'), [
